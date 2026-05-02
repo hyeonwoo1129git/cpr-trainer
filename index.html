@@ -1,0 +1,2945 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e14">
+<title>CPR 트레이너</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-elev: #131922;
+    --bg-elev2: #1a2230;
+    --line: #243044;
+    --text: #e6edf3;
+    --text-dim: #8b96a8;
+    --text-muted: #5a6478;
+    --accent: #00ff88;
+    --warn: #ffb020;
+    --error: #ff4d6d;
+    --info: #4cc9ff;
+    --purple: #b794f4;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    display: flex; flex-direction: column;
+    height: 100dvh;
+    background: var(--bg);
+  }
+
+  button {
+    font-family: inherit;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  /* ════════════════════════════════════════════════
+     ROUTER
+     ════════════════════════════════════════════════ */
+  .screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+  }
+  .screen.active { display: flex; }
+  .screen.scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ════════════════════════════════════════════════
+     HOME / NON-TRAINING SCREENS
+     ════════════════════════════════════════════════ */
+  .pad-screen {
+    padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+    min-height: 100%;
+  }
+
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-back {
+    background: var(--bg-elev);
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .nav-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  /* HOME */
+  .home-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100% - 40px);
+    text-align: center;
+    padding: 0 8px;
+  }
+  .home-logo {
+    width: 64px; height: 64px;
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    display: grid; place-items: center;
+    color: var(--accent);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    box-shadow: 0 0 24px rgba(0, 255, 136, 0.25);
+    margin-bottom: 24px;
+  }
+  .home-title {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--info));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .home-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+  .home-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .home-disclaimer {
+    margin-top: 32px;
+    padding: 14px 16px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 360px;
+  }
+
+  /* SHARED BUTTONS */
+  .btn-primary {
+    background: var(--accent); color: #000;
+    padding: 16px 22px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.3), 0 4px 16px rgba(0, 255, 136, 0.15);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.4; }
+  .btn-ghost {
+    background: var(--bg-elev);
+    color: var(--text);
+    border: 1px solid var(--line);
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .btn-ghost:active { background: var(--bg-elev2); }
+  .btn-info {
+    background: var(--info); color: #000;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .btn-warn {
+    background: transparent;
+    color: var(--warn);
+    border: 1px solid var(--warn);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+  .btn-danger {
+    background: var(--error); color: #fff;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* MODE / TIME SELECTION */
+  .select-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .select-sub {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .mode-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .mode-card {
+    padding: 18px;
+    background: var(--bg-elev);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-card:active { transform: scale(0.99); }
+  .mode-card.selected {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(0, 255, 136, 0.06), transparent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .mode-card .mc-icon { font-size: 22px; margin-bottom: 8px; }
+  .mode-card .mc-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .mode-card .mc-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  .time-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .time-chip {
+    padding: 14px 8px;
+    background: var(--bg-elev);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  .time-chip.selected {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .time-custom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .time-custom input {
+    width: 80px;
+    padding: 10px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-align: center;
+  }
+  .time-custom span { color: var(--text-dim); font-size: 13px; }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 20px;
+  }
+  .form-actions button { flex: 1; }
+
+  /* ════════════════════════════════════════════════
+     TRAINING — FULLSCREEN CAMERA OVERLAY
+     ════════════════════════════════════════════════ */
+  .video-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+  #video, #canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;  /* IMPORTANT: cover for fullscreen */
+  }
+  #video { z-index: 1; }
+  #canvas { z-index: 2; pointer-events: none; }
+  .mirror #video, .mirror #canvas { transform: scaleX(-1); }
+
+  /* TOP HUD - status bar style */
+  .top-hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 5;
+    padding: calc(8px + var(--safe-top)) 12px 8px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.65), transparent);
+    pointer-events: none;
+  }
+  .top-hud-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .hud-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: rgba(10, 14, 20, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .hud-pill.ok { color: var(--accent); border-color: rgba(0, 255, 136, 0.3); }
+  .hud-pill.warn { color: var(--warn); border-color: rgba(255, 176, 32, 0.3); }
+  .hud-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-muted);
+  }
+  .hud-pill.ok .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .hud-pill.warn .dot { background: var(--warn); }
+
+  .hud-timer {
+    background: rgba(10, 14, 20, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 136, 0.4);
+    border-radius: 10px;
+    padding: 6px 12px;
+    pointer-events: auto;
+    text-align: center;
+    min-width: 92px;
+  }
+  .hud-timer .label {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .hud-timer .time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+  .hud-timer .cycle {
+    font-size: 9px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .top-hud-row.secondary {
+    margin-top: 8px;
+  }
+
+  /* CENTER overlay — big BPM and last press eval */
+  .center-info {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    z-index: 4;
+    pointer-events: none;
+    text-align: center;
+    width: 90%;
+    max-width: 320px;
+  }
+
+  .bpm-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 4px 32px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+  .bpm-big.good { color: var(--accent); text-shadow: 0 4px 32px rgba(0,0,0,0.8), 0 0 30px rgba(0, 255, 136, 0.5); }
+  .bpm-big.slow { color: var(--info); text-shadow: 0 4px 32px rgba(0,0,0,0.8), 0 0 30px rgba(76, 201, 255, 0.5); }
+  .bpm-big.fast { color: var(--warn); text-shadow: 0 4px 32px rgba(0,0,0,0.8), 0 0 30px rgba(255, 176, 32, 0.5); }
+  .bpm-label-big {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.2em;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+
+  /* PRESS COUNT bottom */
+  .count-block {
+    position: absolute;
+    z-index: 4;
+    pointer-events: none;
+    text-align: center;
+    background: rgba(10, 14, 20, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 8px 14px;
+  }
+  .count-block .label {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .count-block .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  /* EVAL chips - depth & position */
+  .eval-chips {
+    position: absolute;
+    left: 0; right: 0;
+    z-index: 4;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    pointer-events: none;
+    padding: 0 12px;
+  }
+  .eval-chip {
+    padding: 10px 16px;
+    background: rgba(10, 14, 20, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    flex: 1;
+    max-width: 160px;
+    transition: all 0.2s;
+  }
+  .eval-chip .ec-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .eval-chip .ec-val {
+    font-size: 16px;
+    color: var(--text-dim);
+  }
+  .eval-chip.good { border-color: var(--accent); background: rgba(0, 255, 136, 0.1); }
+  .eval-chip.good .ec-val { color: var(--accent); }
+  .eval-chip.warn { border-color: var(--warn); background: rgba(255, 176, 32, 0.1); }
+  .eval-chip.warn .ec-val { color: var(--warn); }
+  .eval-chip.bad { border-color: var(--error); background: rgba(255, 77, 109, 0.1); }
+  .eval-chip.bad .ec-val { color: var(--error); }
+
+  /* Position eval chips above ECG, count above eval */
+  .eval-chips { bottom: calc(110px + 12px); }
+  .count-block.left {
+    bottom: calc(110px + 12px + 60px);
+    left: 12px;
+  }
+
+  /* ECG canvas - bottom strip */
+  #ecgCanvas {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 110px;
+    z-index: 3;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    border-top: 1px solid rgba(0, 255, 136, 0.3);
+  }
+
+  /* Coach toast */
+  .coach-toast {
+    position: absolute;
+    top: calc(100px + var(--safe-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+    padding: 10px 18px;
+    background: rgba(10, 14, 20, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid var(--info);
+    border-radius: 999px;
+    color: var(--info);
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 0 24px rgba(76, 201, 255, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .coach-toast.show { opacity: 1; transform: translateX(-50%) translateY(4px); }
+  .coach-toast.warn { border-color: var(--warn); color: var(--warn); box-shadow: 0 0 24px rgba(255, 176, 32, 0.3); }
+  .coach-toast.bad { border-color: var(--error); color: var(--error); box-shadow: 0 0 24px rgba(255, 77, 109, 0.3); }
+  .coach-toast.good { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 24px rgba(0, 255, 136, 0.3); }
+
+  /* Center banner (waiting / calibration / completion) */
+  .center-banner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 7;
+    pointer-events: none;
+    text-align: center;
+    width: 90%;
+    max-width: 360px;
+  }
+  .center-banner.hidden { display: none; }
+  .banner-status {
+    display: inline-block;
+    padding: 5px 14px;
+    background: rgba(10, 14, 20, 0.85);
+    border: 1px solid var(--info);
+    border-radius: 999px;
+    color: var(--info);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+    backdrop-filter: blur(8px);
+  }
+  .banner-status.warn { border-color: var(--warn); color: var(--warn); }
+  .banner-status.ok { border-color: var(--accent); color: var(--accent); }
+  .banner-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--text);
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9);
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+  }
+  .banner-desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  }
+  .ready-progress {
+    margin-top: 18px;
+    width: 220px;
+    height: 5px;
+    background: rgba(10, 14, 20, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .ready-progress-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--info), var(--accent));
+    border-radius: 999px;
+    transition: width 0.1s linear;
+  }
+  .ready-checklist {
+    margin-top: 16px;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(10, 14, 20, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .check-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .check-icon {
+    width: 14px; height: 14px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 1.5px solid var(--text-muted);
+    color: var(--text-muted);
+    font-size: 9px;
+    flex-shrink: 0;
+  }
+  .check-item.done .check-icon {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+  .check-item.done { color: var(--accent); }
+
+  /* Calibration counter */
+  .calib-counter {
+    position: absolute;
+    bottom: calc(140px + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    pointer-events: none;
+    display: flex; gap: 8px;
+  }
+  .calib-counter.hidden { display: none; }
+  .calib-dot {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--text-muted);
+    background: rgba(10, 14, 20, 0.85);
+    backdrop-filter: blur(8px);
+    display: grid; place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: all 0.3s;
+  }
+  .calib-dot.done {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 255, 136, 0.15);
+    box-shadow: 0 0 16px rgba(0, 255, 136, 0.4);
+    transform: scale(1.05);
+  }
+  .calib-dot.active {
+    border-color: var(--info);
+    color: var(--info);
+    animation: dotPulse 1s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { box-shadow: 0 0 6px rgba(76, 201, 255, 0.4); transform: scale(1); }
+    50% { box-shadow: 0 0 18px rgba(76, 201, 255, 0.7); transform: scale(1.06); }
+  }
+
+  /* Press flash */
+  .press-flash {
+    position: absolute; inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: radial-gradient(circle at center, rgba(0, 255, 136, 0.18), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .press-flash.flash { opacity: 1; }
+
+  /* Breath countdown */
+  .breath-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    background: rgba(10, 14, 20, 0.88);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .breath-overlay.active { display: flex; }
+  .breath-content { text-align: center; }
+  .breath-content .label {
+    font-size: 12px;
+    color: var(--info);
+    letter-spacing: 0.2em;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+  .breath-content .num {
+    font-size: 110px;
+    font-weight: 900;
+    color: var(--info);
+    text-shadow: 0 0 40px rgba(76, 201, 255, 0.5);
+    line-height: 1;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .breath-content .desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 10px;
+  }
+
+  /* BOTTOM control button strip */
+  .bottom-controls {
+    position: absolute;
+    bottom: calc(110px + 12px);
+    right: 12px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  /* 항상 보이는 그룹은 측정 컨트롤보다 더 위로 */
+  #bottomControlsAlways {
+    bottom: calc(110px + 12px + 220px);  /* 측정 컨트롤 (3버튼) 높이만큼 위 */
+  }
+  /* 측정 중에는 카메라 전환을 위로 더 올림 */
+  body.measuring #bottomControlsAlways {
+    bottom: calc(110px + 12px + 220px);
+  }
+  /* 측정 중이 아닐 때(준비/캘리브레이션)에는 카메라 전환 버튼을 아래로 */
+  body:not(.measuring) #bottomControlsAlways {
+    bottom: calc(110px + 12px);
+  }
+  .ctrl-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(10, 14, 20, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text);
+    font-size: 18px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ctrl-btn:active { transform: scale(0.92); }
+  .ctrl-btn.off {
+    color: var(--text-muted);
+    background: rgba(10, 14, 20, 0.6);
+  }
+  .ctrl-btn.danger {
+    color: var(--error);
+    border-color: rgba(255, 77, 109, 0.4);
+  }
+
+  /* ════════════════════════════════════════════════
+     RESULT / RECORDS / SETTINGS
+     ════════════════════════════════════════════════ */
+  .result-grade-card {
+    text-align: center;
+    padding: 32px 20px;
+    background: linear-gradient(180deg, rgba(0, 255, 136, 0.08), transparent);
+    border: 1px solid var(--accent);
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+  .result-grade-card.B { border-color: var(--info); background: linear-gradient(180deg, rgba(76, 201, 255, 0.08), transparent); }
+  .result-grade-card.C { border-color: var(--warn); background: linear-gradient(180deg, rgba(255, 176, 32, 0.08), transparent); }
+  .result-grade-card.D { border-color: var(--error); background: linear-gradient(180deg, rgba(255, 77, 109, 0.08), transparent); }
+  .result-grade-letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 80px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--accent);
+    text-shadow: 0 0 32px rgba(0, 255, 136, 0.4);
+    margin-bottom: 6px;
+  }
+  .result-grade-card.B .result-grade-letter { color: var(--info); text-shadow: 0 0 32px rgba(76, 201, 255, 0.4); }
+  .result-grade-card.C .result-grade-letter { color: var(--warn); text-shadow: 0 0 32px rgba(255, 176, 32, 0.4); }
+  .result-grade-card.D .result-grade-letter { color: var(--error); text-shadow: 0 0 32px rgba(255, 77, 109, 0.4); }
+  .result-grade-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .result-grade-comment {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .result-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .result-metric {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .result-metric .rm-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .result-metric .rm-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .result-metric .rm-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .result-section {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .result-section h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .timeline-canvas {
+    width: 100%;
+    height: 140px;
+    background: #000;
+    border-radius: 8px;
+  }
+  .legend-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+  .legend-row > span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .legend-row .swatch {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+  }
+
+  /* RECORDS */
+  .records-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .record-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .record-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .record-item:active { background: var(--bg-elev2); }
+  .record-info { display: flex; align-items: center; gap: 12px; }
+  .record-grade-badge {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .record-grade-badge.S { background: rgba(0, 255, 136, 0.15); color: var(--accent); }
+  .record-grade-badge.A { background: rgba(0, 255, 136, 0.12); color: var(--accent); }
+  .record-grade-badge.B { background: rgba(76, 201, 255, 0.12); color: var(--info); }
+  .record-grade-badge.C { background: rgba(255, 176, 32, 0.12); color: var(--warn); }
+  .record-grade-badge.D { background: rgba(255, 77, 109, 0.12); color: var(--error); }
+  .record-meta { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+  .record-date { font-size: 13px; font-weight: 600; }
+  .record-mode { font-size: 10px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--text-muted);
+  }
+  .empty-state h4 { color: var(--text-dim); margin-bottom: 6px; font-size: 14px; }
+  .empty-state p { font-size: 12px; line-height: 1.6; }
+
+  /* SETTINGS */
+  .settings-section { margin-bottom: 14px; }
+  .settings-section h4 {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .settings-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    font-size: 13px;
+    gap: 12px;
+  }
+  .settings-row + .settings-row { border-top: 1px solid var(--line); }
+  .settings-row .label-group { display: flex; flex-direction: column; min-width: 0; }
+  .settings-row .label-name { color: var(--text); font-weight: 600; }
+  .settings-row .label-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .toggle {
+    position: relative; width: 44px; height: 24px;
+    background: var(--bg-elev2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .toggle::after {
+    content: ""; position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .toggle.on {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: var(--accent);
+  }
+  .toggle.on::after {
+    left: 22px;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* Loading */
+  .loading-veil {
+    position: absolute; inset: 0;
+    background: rgba(10, 14, 20, 0.95);
+    display: grid; place-items: center;
+    z-index: 100;
+    transition: opacity 0.3s;
+  }
+  .loading-veil.hidden { opacity: 0; pointer-events: none; }
+  .loading-content { text-align: center; color: var(--text); padding: 32px; }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-size: 13px; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Result actions sticky */
+  .result-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    padding-bottom: 8px;
+  }
+  .result-actions button { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HOME
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="screen scroll active" id="screen-home">
+  <div class="pad-screen">
+    <div class="home-content">
+      <div class="home-logo">CPR</div>
+      <div class="home-title">CPR 트레이너</div>
+      <div class="home-sub">스마트폰 카메라로 가슴압박을<br>측정하고 피드백을 받는 훈련 도구</div>
+      <div class="home-cta">
+        <button class="btn-primary" data-nav="mode">▶ 새 훈련 시작</button>
+        <button class="btn-ghost" data-nav="records">📊 내 훈련 기록</button>
+        <button class="btn-ghost" data-nav="settings">⚙ 설정</button>
+      </div>
+      <div class="home-disclaimer">
+        본 앱은 <b>훈련 보조용</b>이며 의료기기가 아닙니다.<br>
+        실제 응급 상황에서는 즉시 <b>119</b>에 신고하세요.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODE
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="screen scroll" id="screen-mode">
+  <div class="pad-screen" style="display: flex; flex-direction: column;">
+    <div class="nav-bar">
+      <button class="nav-back" data-nav="home">← 뒤로</button>
+      <div class="nav-title">훈련 모드</div>
+      <div style="width: 56px;"></div>
+    </div>
+    <div class="select-sub">압박 사이클 방식을 선택하세요.</div>
+    <div class="mode-cards">
+      <div class="mode-card" data-mode="continuous">
+        <div class="mc-icon">⚡</div>
+        <div class="mc-title">연속 압박</div>
+        <div class="mc-desc">정해진 시간 동안 끊김 없이 가슴압박만 수행. 박자와 깊이의 일관성 훈련.</div>
+      </div>
+      <div class="mode-card selected" data-mode="cycle">
+        <div class="mc-icon">🔁</div>
+        <div class="mc-title">30:2 사이클</div>
+        <div class="mc-desc">30회 압박 + 5초 인공호흡 휴식. 실제 CPR 절차에 가까움.</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 8px; margin-bottom: 8px;">
+      <h4 style="font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">평가 항목</h4>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">깊이 평가</span>
+            <span class="label-desc">압박 깊이가 충분한지 평가</span>
+          </div>
+          <div class="toggle on" data-toggle-eval="evalDepth"></div>
+        </div>
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">위치 평가</span>
+            <span class="label-desc">압박 위치가 정확한지 평가</span>
+          </div>
+          <div class="toggle on" data-toggle-eval="evalPosition"></div>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.5;">
+        둘 다 끄면 캘리브레이션 없이 박자와 ECG만 측정합니다.
+      </p>
+    </div>
+
+    <div class="form-actions" style="margin-top: auto;">
+      <button class="btn-primary" data-nav="time">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TIME
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="screen scroll" id="screen-time">
+  <div class="pad-screen" style="display: flex; flex-direction: column;">
+    <div class="nav-bar">
+      <button class="nav-back" data-nav="mode">← 뒤로</button>
+      <div class="nav-title">훈련 시간</div>
+      <div style="width: 56px;"></div>
+    </div>
+    <div class="select-sub">훈련 시간을 선택하세요. 시간이 끝나면 결과 화면이 나옵니다.</div>
+    <div class="time-row">
+      <div class="time-chip" data-time="1">1분</div>
+      <div class="time-chip selected" data-time="2">2분</div>
+      <div class="time-chip" data-time="5">5분</div>
+      <div class="time-chip" data-time="10">10분</div>
+    </div>
+    <div class="time-custom">
+      <span>직접 입력:</span>
+      <input type="number" min="1" max="30" id="timeInput" placeholder="분">
+      <span>분 (1~30)</span>
+    </div>
+    <div class="form-actions" style="margin-top: auto;">
+      <button class="btn-primary" id="startTrainingBtn">▶ 훈련 시작</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TRAINING - FULLSCREEN
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-training">
+  <div class="video-stage mirror" id="stage">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div class="press-flash" id="pressFlash"></div>
+    <canvas id="ecgCanvas"></canvas>
+
+    <!-- TOP HUD -->
+    <div class="top-hud">
+      <div class="top-hud-row">
+        <div class="hud-pill" id="hudPhase"><span class="dot"></span> 대기</div>
+        <div class="hud-timer" id="hudTimer" style="display:none;">
+          <div class="label">남은 시간</div>
+          <div class="time" id="hudTimeText">00:00</div>
+          <div class="cycle" id="hudCycleText"></div>
+        </div>
+        <div style="width: 60px;"></div>
+      </div>
+      <div class="top-hud-row secondary">
+        <div class="hud-pill" id="hudHand"><span class="dot"></span> Hand 대기</div>
+        <div class="hud-pill" id="hudCam"><span class="dot"></span> 카메라 OFF</div>
+      </div>
+    </div>
+
+    <!-- COACH TOAST -->
+    <div class="coach-toast" id="coachToast"></div>
+
+    <!-- CENTER - BIG BPM -->
+    <div class="center-info" id="centerInfo" style="display:none;">
+      <div class="bpm-big" id="bpmBig">—</div>
+      <div class="bpm-label-big">BPM · 목표 100-120</div>
+    </div>
+
+    <!-- COUNT + EVAL CHIPS (bottom) -->
+    <div class="count-block left" id="countBlock" style="display:none;">
+      <div class="label">압박</div>
+      <div class="num" id="totalCountText">0</div>
+    </div>
+
+    <div class="eval-chips" id="evalChips" style="display:none;">
+      <div class="eval-chip" id="depthChip">
+        <div class="ec-label">DEPTH</div>
+        <div class="ec-val" id="depthEvalText">—</div>
+      </div>
+      <div class="eval-chip" id="posChip">
+        <div class="ec-label">POSITION</div>
+        <div class="ec-val" id="posEvalText">—</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM RIGHT CONTROL BUTTONS - 항상 보이는 그룹 (카메라 전환 등) -->
+    <div class="bottom-controls" id="bottomControlsAlways">
+      <button class="ctrl-btn" id="ctrlFlip" title="카메라 전환">🔄</button>
+    </div>
+
+    <!-- BOTTOM RIGHT CONTROL BUTTONS - 측정 중에만 보이는 그룹 -->
+    <div class="bottom-controls" id="bottomControls" style="display:none;">
+      <button class="ctrl-btn" id="ctrlVoice" title="음성">🔊</button>
+      <button class="ctrl-btn off" id="ctrlMetro" title="메트로놈">🎵</button>
+      <button class="ctrl-btn danger" id="ctrlEnd" title="종료">⏹</button>
+    </div>
+
+    <!-- CENTER BANNER -->
+    <div class="center-banner" id="centerBanner">
+      <div class="banner-status" id="bannerStatus">IDLE</div>
+      <div class="banner-title" id="bannerTitle">대기 중</div>
+      <div class="banner-desc" id="bannerDesc">시작 버튼을 눌러주세요.</div>
+      <div id="bannerExtra"></div>
+    </div>
+
+    <div class="calib-counter hidden" id="calibCounter">
+      <div class="calib-dot active" data-step="1">1</div>
+      <div class="calib-dot" data-step="2">2</div>
+      <div class="calib-dot" data-step="3">3</div>
+      <div class="calib-dot" data-step="4">4</div>
+      <div class="calib-dot" data-step="5">5</div>
+    </div>
+
+    <div class="breath-overlay" id="breathOverlay">
+      <div class="breath-content">
+        <div class="label">RESCUE BREATHS</div>
+        <div class="num" id="breathNum">5</div>
+        <div class="desc">인공호흡 2회 후<br>다음 사이클을 시작합니다</div>
+      </div>
+    </div>
+
+    <!-- 3초 카운트다운 오버레이 -->
+    <div class="breath-overlay" id="countdownOverlay">
+      <div class="breath-content">
+        <div class="label" id="countdownLabel">준비</div>
+        <div class="num" id="countdownNum" style="color: var(--accent); text-shadow: 0 0 40px rgba(0,255,136,0.5);">3</div>
+        <div class="desc" id="countdownDesc">시작하세요</div>
+      </div>
+    </div>
+
+    <!-- 인공호흡 후 손 복귀 안내 오버레이 -->
+    <div class="breath-overlay" id="returnOverlay">
+      <div class="breath-content">
+        <div class="label" style="color: var(--warn);">압박 준비</div>
+        <div style="font-size: 60px; margin: 10px 0;">🎯</div>
+        <div class="desc" style="font-size: 16px; color: var(--text);">
+          손을 <b style="color: var(--accent);">압박점</b>에 올려주세요<br>
+          <span style="font-size: 13px; color: var(--text-dim); margin-top: 8px; display: block;">압박점이 초록색으로 바뀌면 자동으로 시작됩니다</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-veil" id="loadingVeil">
+      <div class="loading-content" id="loadingContent">
+        <div style="font-size: 32px; margin-bottom: 12px;">📷</div>
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">카메라 권한이 필요합니다</div>
+        <div style="font-size: 12px; color: var(--text-dim); line-height: 1.6;">권한을 허용해주세요.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     RESULT
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="screen scroll" id="screen-result">
+  <div class="pad-screen">
+    <div class="nav-bar">
+      <button class="nav-back" data-nav="home">← 홈</button>
+      <div class="nav-title">훈련 결과</div>
+      <div style="width: 56px;"></div>
+    </div>
+
+    <div class="result-grade-card" id="resultGradeCard">
+      <div class="result-grade-letter" id="resultGradeLetter">—</div>
+      <div class="result-grade-label" id="resultGradeLabel">평가 중...</div>
+      <div class="result-grade-comment" id="resultGradeComment"></div>
+    </div>
+
+    <div class="result-metrics">
+      <div class="result-metric">
+        <div class="rm-label">평균 BPM</div>
+        <div class="rm-value" id="rmAvgBpm">—</div>
+        <div class="rm-sub" id="rmAvgBpmSub">목표 100-120</div>
+      </div>
+      <div class="result-metric">
+        <div class="rm-label">박자 적정</div>
+        <div class="rm-value" id="rmBpmRatio">—</div>
+        <div class="rm-sub">100-120 BPM</div>
+      </div>
+      <div class="result-metric" id="rmDepthCard">
+        <div class="rm-label">깊이 좋음</div>
+        <div class="rm-value" id="rmDepthRatio">—</div>
+        <div class="rm-sub">충분한 압박</div>
+      </div>
+      <div class="result-metric" id="rmPosCard">
+        <div class="rm-label">위치 좋음</div>
+        <div class="rm-value" id="rmPosRatio">—</div>
+        <div class="rm-sub">압박점 정확도</div>
+      </div>
+    </div>
+
+    <div class="result-section">
+      <h4>시간대별 추이</h4>
+      <canvas class="timeline-canvas" id="timelineCanvas"></canvas>
+      <div class="legend-row">
+        <span><span class="swatch" style="background:var(--accent);"></span>BPM</span>
+        <span><span class="swatch" style="background:var(--info);"></span>깊이</span>
+        <span><span class="swatch" style="background:var(--purple);"></span>위치</span>
+      </div>
+    </div>
+
+    <div class="result-section">
+      <h4>코멘트</h4>
+      <div id="resultComment" style="color: var(--text-dim); line-height: 1.7; font-size: 13px;">분석 중...</div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-ghost" data-nav="records">📊 기록</button>
+      <button class="btn-primary" data-nav="mode">↻ 다시</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     RECORDS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="screen scroll" id="screen-records">
+  <div class="pad-screen">
+    <div class="nav-bar">
+      <button class="nav-back" data-nav="home">← 홈</button>
+      <div class="nav-title">내 훈련 기록</div>
+      <div style="width: 56px;"></div>
+    </div>
+    <div class="records-stats">
+      <div class="result-metric">
+        <div class="rm-label">총 세션</div>
+        <div class="rm-value" id="recTotalSessions">0</div>
+      </div>
+      <div class="result-metric">
+        <div class="rm-label">평균</div>
+        <div class="rm-value" id="recAvgGrade">—</div>
+      </div>
+      <div class="result-metric">
+        <div class="rm-label">최고</div>
+        <div class="rm-value" id="recBestGrade">—</div>
+      </div>
+    </div>
+    <div class="record-list" id="recordList"></div>
+    <div class="result-actions" style="margin-top: 24px;">
+      <button class="btn-warn" id="clearRecordsBtn">전체 삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SETTINGS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="screen scroll" id="screen-settings">
+  <div class="pad-screen">
+    <div class="nav-bar">
+      <button class="nav-back" data-nav="home">← 홈</button>
+      <div class="nav-title">설정</div>
+      <div style="width: 56px;"></div>
+    </div>
+
+    <div class="settings-section">
+      <h4>오디오</h4>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">음성 코칭</span>
+            <span class="label-desc">한국어 자세 교정 안내</span>
+          </div>
+          <div class="toggle on" data-toggle-global="voiceOn"></div>
+        </div>
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">메트로놈</span>
+            <span class="label-desc">110 BPM 비트 사운드</span>
+          </div>
+          <div class="toggle" data-toggle-global="metronomeOn"></div>
+        </div>
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">압박 효과음</span>
+            <span class="label-desc">압박 시 깊이별 다른 톤</span>
+          </div>
+          <div class="toggle on" data-toggle-global="pressBeepOn"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>시각화</h4>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">ECG 파형</span>
+            <span class="label-desc">압박 움직임을 ECG로 시각화</span>
+          </div>
+          <div class="toggle on" data-toggle-global="ecgOn"></div>
+        </div>
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">손 랜드마크</span>
+            <span class="label-desc">검출된 손 관절 표시</span>
+          </div>
+          <div class="toggle on" data-toggle-global="showHands"></div>
+        </div>
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">좌우 반전 (셀카)</span>
+            <span class="label-desc">전면 카메라 거울 모드</span>
+          </div>
+          <div class="toggle on" data-toggle-global="mirror"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>정보</h4>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">버전</span>
+            <span class="label-desc">v1.0 · 모바일 풀스크린</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="label-group">
+            <span class="label-name">훈련 보조용</span>
+            <span class="label-desc">의료기기 아님. 119 신고 우선.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {
+  HandLandmarker,
+  FilesetResolver
+} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.9/vision_bundle.mjs";
+
+// ════════════════════════════════════════════════════════════════
+// Constants
+// ════════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+
+const PHASE = {
+  IDLE: 'idle', WAITING: 'waiting', CALIBRATING: 'calibrating',
+  COUNTDOWN: 'countdown',   // 3초 카운트다운
+  MEASURING: 'measuring', BREATH: 'breath',
+  RETURN: 'return',         // 인공호흡 후 손 복귀 대기
+  ENDED: 'ended'
+};
+const CALIB_PRESS_COUNT = 5;
+const READY_HOLD_MS = 1500;
+const STABILITY_THRESHOLD_PX = 25;
+const BREATH_DURATION_MS = 5000;
+const COMPRESSIONS_PER_CYCLE = 30;
+
+// ════════════════════════════════════════════════════════════════
+// State
+// ════════════════════════════════════════════════════════════════
+const settings = {
+  voiceOn: true, metronomeOn: false, pressBeepOn: true,
+  ecgOn: true, showHands: true, mirror: true,
+};
+
+const state = {
+  running: false,
+  handLandmarker: null,
+  lastVideoTime: -1,
+  lastFrameTime: performance.now(),
+  mode: 'cycle',
+  durationSec: 120,
+  // 평가 항목 (모드 선택 화면에서 설정)
+  evalDepth: true,
+  evalPosition: true,
+  sessionStartT: 0, sessionEndT: 0,
+  cycleNum: 0, cycleCompressionCount: 0,
+  breathStartT: 0,
+  phase: PHASE.IDLE,
+  palmHistory: [],
+  PALM_HISTORY_DURATION_MS: 8000,
+  pressState: 'IDLE',
+  pressTopY: null, pressBottomY: null, pressBottomT: null, pressBottomX: null,
+  lastPressDetectedT: 0,
+  PRESS_MIN_INTERVAL_MS: 200,
+  PRESS_MIN_AMPLITUDE_PX: 8,
+  PRESS_RECOVERY_RATIO: 0.25,
+  presses: [],
+  calibPresses: [],
+  calibTarget: null,
+  calibAmpPx: null,
+  pxPerCm: null,
+  readyStartT: null,
+  lastCoachAt: { slow: 0, fast: 0, depthLow: 0, depthHigh: 0, posBad: 0, encourage: 0 },
+  metronomeBpm: 110,
+  metronomeNextT: 0,
+  countdownStartT: 0,   // 카운트다운 시작 시각
+  returnReadyT: null,   // 복귀 후 손이 안정된 시각
+  ecgBuffer: [],
+  ecgYBaseline: null,
+  ecgYBaselineRecent: [],
+  lastResult: null,
+};
+
+let latestPalm = null;
+let lastEcgT = performance.now();
+let currentFacing = 'user';  // 'user' | 'environment' - 기본 전면 카메라
+
+// DOM refs
+const video = $('video');
+const canvas = $('canvas');
+const ctx = canvas.getContext('2d');
+const ecgCanvas = $('ecgCanvas');
+const ecgCtx = ecgCanvas.getContext('2d');
+const stage = $('stage');
+const pressFlash = $('pressFlash');
+const coachToast = $('coachToast');
+
+// ════════════════════════════════════════════════════════════════
+// Audio
+// ════════════════════════════════════════════════════════════════
+let audioCtx = null;
+let audioEnabled = false;
+
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+async function enableAudio() {
+  initAudio();
+  try {
+    await audioCtx.resume();
+    const buffer = audioCtx.createBuffer(1, 1, 22050);
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
+    audioEnabled = true;
+    if (window.speechSynthesis) {
+      speechSynthesis.getVoices();
+      const utt = new SpeechSynthesisUtterance(' ');
+      utt.volume = 0;
+      speechSynthesis.speak(utt);
+    }
+  } catch (e) { console.error(e); }
+}
+
+function beep(freq, dur = 0.08, vol = 0.15, type = 'sine') {
+  if (!audioEnabled || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, now);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(vol, now + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now); osc.stop(now + dur + 0.02);
+}
+
+function pressBeep(quality) {
+  if (!settings.pressBeepOn) return;
+  if (quality === 'good') beep(880, 0.07, 0.18, 'sine');
+  else if (quality === 'warn') beep(440, 0.08, 0.15, 'triangle');
+  else beep(220, 0.1, 0.18, 'square');
+}
+
+function metronomeTick() {
+  if (!settings.metronomeOn) return;
+  beep(1200, 0.04, 0.12, 'square');
+}
+
+let voices = [];
+function loadVoices() { voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; }
+if (typeof speechSynthesis !== 'undefined') {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speak(text) {
+  if (!settings.voiceOn || !window.speechSynthesis || !audioEnabled) return;
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'ko-KR';
+  utt.rate = 1.0; utt.pitch = 0.95; utt.volume = 1.0;
+  if (!voices.length) loadVoices();
+  const krVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ko'));
+  if (krVoice) utt.voice = krVoice;
+  speechSynthesis.speak(utt);
+}
+
+function showToast(text, kind = 'info', duration = 1800) {
+  coachToast.textContent = text;
+  coachToast.className = 'coach-toast show ' + kind;
+  setTimeout(() => coachToast.classList.remove('show'), duration);
+}
+
+function coach(key, text, kind = 'info', cooldownMs = 5000) {
+  const now = performance.now();
+  if (now - (state.lastCoachAt[key] || 0) < cooldownMs) return;
+  state.lastCoachAt[key] = now;
+  showToast(text, kind);
+  speak(text);
+}
+
+// ════════════════════════════════════════════════════════════════
+// Routing
+// ════════════════════════════════════════════════════════════════
+function navigate(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(`screen-${name}`).classList.add('active');
+  if (name !== 'training' && state.running) stopSession();
+  if (name === 'records') renderRecords();
+  if (name === 'mode') syncEvalToggles();
+}
+window.__nav = navigate;
+
+document.querySelectorAll('[data-nav]').forEach(el => {
+  el.addEventListener('click', () => navigate(el.dataset.nav));
+});
+
+document.querySelectorAll('[data-mode]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('[data-mode]').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.mode = el.dataset.mode;
+  });
+});
+
+document.querySelectorAll('[data-time]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('[data-time]').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.durationSec = parseInt(el.dataset.time) * 60;
+    $('timeInput').value = '';
+  });
+});
+
+$('timeInput').addEventListener('input', e => {
+  const v = parseInt(e.target.value);
+  if (v >= 1 && v <= 30) {
+    document.querySelectorAll('[data-time]').forEach(c => c.classList.remove('selected'));
+    state.durationSec = v * 60;
+  }
+});
+
+// 평가 항목 토글 (모드 선택 화면)
+function syncEvalToggles() {
+  document.querySelectorAll('[data-toggle-eval]').forEach(el => {
+    const key = el.dataset.toggleEval;
+    el.classList.toggle('on', state[key]);
+  });
+}
+document.querySelectorAll('[data-toggle-eval]').forEach(el => {
+  el.addEventListener('click', () => {
+    const key = el.dataset.toggleEval;
+    state[key] = !state[key];
+    syncEvalToggles();
+  });
+});
+
+function syncToggleEls() {
+  document.querySelectorAll('[data-toggle-global]').forEach(el => {
+    const key = el.dataset.toggleGlobal;
+    el.classList.toggle('on', settings[key]);
+  });
+  // Update ctrl-btn states
+  $('ctrlVoice').classList.toggle('off', !settings.voiceOn);
+  $('ctrlVoice').textContent = settings.voiceOn ? '🔊' : '🔇';
+  $('ctrlMetro').classList.toggle('off', !settings.metronomeOn);
+}
+function bindToggle(attr) {
+  document.querySelectorAll(`[${attr}]`).forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.getAttribute(attr);
+      settings[key] = !settings[key];
+      saveSettings();
+      syncToggleEls();
+      if (key === 'mirror') stage.classList.toggle('mirror', settings.mirror);
+      if (key === 'voiceOn' && !settings.voiceOn) speechSynthesis.cancel();
+    });
+  });
+}
+bindToggle('data-toggle-global');
+
+// In-training control buttons
+$('ctrlVoice').addEventListener('click', () => {
+  settings.voiceOn = !settings.voiceOn;
+  saveSettings(); syncToggleEls();
+  if (!settings.voiceOn) speechSynthesis.cancel();
+});
+$('ctrlMetro').addEventListener('click', () => {
+  settings.metronomeOn = !settings.metronomeOn;
+  saveSettings(); syncToggleEls();
+});
+$('ctrlEnd').addEventListener('click', () => {
+  if (state.phase === PHASE.MEASURING || state.phase === PHASE.BREATH) {
+    if (confirm('훈련을 종료할까요?')) setPhase(PHASE.ENDED);
+  }
+});
+$('ctrlFlip').addEventListener('click', () => {
+  flipCamera();
+});
+
+// ════════════════════════════════════════════════════════════════
+// Persistence
+// ════════════════════════════════════════════════════════════════
+function saveSettings() {
+  try { localStorage.setItem('cpr_settings', JSON.stringify(settings)); } catch (e) {}
+}
+function loadSettings() {
+  try {
+    const s = localStorage.getItem('cpr_settings');
+    if (s) Object.assign(settings, JSON.parse(s));
+  } catch (e) {}
+}
+function loadRecords() {
+  try {
+    const r = localStorage.getItem('cpr_records');
+    return r ? JSON.parse(r) : [];
+  } catch (e) { return []; }
+}
+function saveRecord(record) {
+  try {
+    const records = loadRecords();
+    records.unshift(record);
+    if (records.length > 100) records.length = 100;
+    localStorage.setItem('cpr_records', JSON.stringify(records));
+  } catch (e) {}
+}
+function clearRecords() {
+  try { localStorage.removeItem('cpr_records'); } catch (e) {}
+}
+
+loadSettings();
+syncToggleEls();
+stage.classList.toggle('mirror', settings.mirror);
+
+// ════════════════════════════════════════════════════════════════
+// Camera + MediaPipe
+// ════════════════════════════════════════════════════════════════
+function setLoading(text, showSpinner = true) {
+  $('loadingVeil').classList.remove('hidden');
+  $('loadingContent').innerHTML = `
+    ${showSpinner ? '<div class="spinner"></div>' : '<div style="font-size:32px;margin-bottom:12px;">📷</div>'}
+    <div class="loading-text">${text}</div>
+  `;
+}
+function hideLoading() { $('loadingVeil').classList.add('hidden'); }
+
+function setHudPill(id, st, text) {
+  const el = $(id);
+  el.className = 'hud-pill ' + st;
+  el.innerHTML = `<span class="dot"></span>${text}`;
+}
+
+async function initMediaPipe() {
+  setLoading('AI 모델 로딩 중...');
+  const vision = await FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.9/wasm"
+  );
+  state.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+      delegate: "GPU"
+    },
+    runningMode: "VIDEO",
+    numHands: 2,
+    minHandDetectionConfidence: 0.3,
+    minHandPresenceConfidence: 0.3,
+    minTrackingConfidence: 0.3
+  });
+}
+
+async function startCamera() {
+  setLoading('카메라 권한 요청 중...');
+  try {
+    const constraints = {
+      video: {
+        facingMode: { ideal: currentFacing },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    };
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      // 폴백: 일반 카메라
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+    }
+    video.srcObject = stream;
+    await new Promise(resolve => video.onloadedmetadata = resolve);
+    await video.play();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    resizeEcgCanvas();
+
+    // 후면 카메라일 때 좌우 반전 자동 해제, 전면이면 반전
+    const track = stream.getVideoTracks()[0];
+    if (track && track.getSettings) {
+      const set = track.getSettings();
+      const facing = set.facingMode || currentFacing;
+      currentFacing = facing;
+      if (facing === 'environment') {
+        settings.mirror = false;
+      } else {
+        settings.mirror = true;
+      }
+      stage.classList.toggle('mirror', settings.mirror);
+      syncToggleEls();
+    }
+    updateFlipButton();
+
+    setHudPill('hudCam', 'ok', `카메라`);
+    return true;
+  } catch (err) {
+    setLoading(`카메라 접근 실패: ${err.message}`, false);
+    setHudPill('hudCam', 'warn', '거부됨');
+    return false;
+  }
+}
+
+// 카메라 전환
+async function flipCamera() {
+  // 전환 중 카메라 정지
+  const oldStream = video.srcObject;
+  currentFacing = (currentFacing === 'environment') ? 'user' : 'environment';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: currentFacing },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    });
+    // 새 스트림 성공 → 기존 정지
+    if (oldStream) {
+      oldStream.getTracks().forEach(t => t.stop());
+    }
+    video.srcObject = stream;
+    await new Promise(resolve => video.onloadedmetadata = resolve);
+    await video.play();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    resizeEcgCanvas();
+
+    const track = stream.getVideoTracks()[0];
+    if (track && track.getSettings) {
+      const set = track.getSettings();
+      const facing = set.facingMode || currentFacing;
+      currentFacing = facing;
+      settings.mirror = (facing !== 'environment');
+      stage.classList.toggle('mirror', settings.mirror);
+      syncToggleEls();
+    }
+    updateFlipButton();
+
+    // 카메라가 바뀌면 자세/캘리브레이션을 새로 잡아야 함
+    state.palmHistory = [];
+    state.ecgBuffer = [];
+    state.ecgYBaseline = null;
+    state.ecgYBaselineRecent = [];
+    state.calibTarget = null;
+    state.calibAmpPx = null;
+    state.pxPerCm = null;
+    state.calibPresses = [];
+    state.presses = [];
+    state.PRESS_MIN_AMPLITUDE_PX = 8;
+    showToast('카메라 전환됨 · 다시 캘리브레이션', 'info', 2400);
+    setPhase(PHASE.WAITING);
+  } catch (err) {
+    console.error('카메라 전환 실패:', err);
+    showToast('카메라 전환 실패', 'bad', 2000);
+    // 원래대로 되돌림
+    currentFacing = (currentFacing === 'environment') ? 'user' : 'environment';
+  }
+}
+
+function updateFlipButton() {
+  const btn = $('ctrlFlip');
+  if (!btn) return;
+  // 전면이면 사람 이모지, 후면이면 카메라 이모지
+  btn.textContent = currentFacing === 'environment' ? '🔄' : '🔄';
+  btn.title = currentFacing === 'environment' ? '전면 카메라로' : '후면 카메라로';
+}
+
+function resizeEcgCanvas() {
+  const rect = ecgCanvas.getBoundingClientRect();
+  ecgCanvas.width = rect.width;
+  ecgCanvas.height = rect.height;
+}
+window.addEventListener('resize', resizeEcgCanvas);
+window.addEventListener('orientationchange', () => {
+  setTimeout(resizeEcgCanvas, 200);
+});
+
+function stopCamera() {
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }
+  setHudPill('hudCam', '', '카메라 OFF');
+}
+
+// ════════════════════════════════════════════════════════════════
+// Hand processing
+// ════════════════════════════════════════════════════════════════
+const HAND_CONNS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[0,17],[17,18],[18,19],[19,20]
+];
+
+function drawHands(handsLms, w, h) {
+  handsLms.forEach(lms => {
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(76, 201, 255, 0.6)';
+    ctx.beginPath();
+    HAND_CONNS.forEach(([a, b]) => {
+      ctx.moveTo(lms[a].x * w, lms[a].y * h);
+      ctx.lineTo(lms[b].x * w, lms[b].y * h);
+    });
+    ctx.stroke();
+    lms.forEach(lm => {
+      ctx.fillStyle = '#4cc9ff';
+      ctx.beginPath();
+      ctx.arc(lm.x * w, lm.y * h, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  });
+}
+
+function computePalm(handRes, w, h) {
+  if (!handRes || !handRes.landmarks || handRes.landmarks.length === 0) return null;
+  if (handRes.landmarks.length >= 2) {
+    const h0 = handRes.landmarks[0], h1 = handRes.landmarks[1];
+    const w0 = h0[0], m0 = h0[9];
+    const w1 = h1[0], m1 = h1[9];
+    const p0x = (w0.x * 0.4 + m0.x * 0.6) * w;
+    const p0y = (w0.y * 0.4 + m0.y * 0.6) * h;
+    const p1x = (w1.x * 0.4 + m1.x * 0.6) * w;
+    const p1y = (w1.y * 0.4 + m1.y * 0.6) * h;
+    return { x: (p0x + p1x) / 2, y: (p0y + p1y) / 2 };
+  } else {
+    const lms = handRes.landmarks[0];
+    const wrist = lms[0], midMcp = lms[9];
+    return {
+      x: (wrist.x * 0.4 + midMcp.x * 0.6) * w,
+      y: (wrist.y * 0.4 + midMcp.y * 0.6) * h
+    };
+  }
+}
+
+function updatePalmHistory(palm, t) {
+  state.palmHistory.push({ t, x: palm.x, y: palm.y });
+  const cutoff = t - state.PALM_HISTORY_DURATION_MS;
+  while (state.palmHistory.length && state.palmHistory[0].t < cutoff) {
+    state.palmHistory.shift();
+  }
+}
+
+function computeStability(t, windowMs = 1500) {
+  const window = state.palmHistory.filter(h => h.t > t - windowMs);
+  if (window.length < 5) return null;
+  const avgX = window.reduce((s, h) => s + h.x, 0) / window.length;
+  const avgY = window.reduce((s, h) => s + h.y, 0) / window.length;
+  const variance = window.reduce((s, h) =>
+    s + (h.x - avgX) ** 2 + (h.y - avgY) ** 2, 0) / window.length;
+  return { stdPx: Math.sqrt(variance), avgX, avgY, count: window.length };
+}
+
+function getRecentSmoothedY(t, palm) {
+  const recent = state.palmHistory.filter(h => h.t > t - 100);
+  if (recent.length === 0) return palm.y;
+  const sum = recent.reduce((s, h) => s + h.y, 0);
+  return sum / recent.length;
+}
+
+function processPressStateMachine(t, palm) {
+  if (!palm) return null;
+  const y = getRecentSmoothedY(t, palm);
+  const minInterval = state.PRESS_MIN_INTERVAL_MS;
+  const hist = state.palmHistory;
+  if (hist.length < 3) return null;
+  const recent = hist.slice(-3);
+  const dy = recent[recent.length - 1].y - recent[0].y;
+
+  if (state.pressState === 'IDLE') {
+    if (dy > 1.0) {
+      state.pressState = 'GOING_DOWN';
+      state.pressTopY = recent[0].y;
+      state.pressBottomY = y;
+      state.pressBottomT = t;
+      state.pressBottomX = palm.x;
+    } else {
+      if (state.pressTopY === null || y < state.pressTopY) state.pressTopY = y;
+    }
+  } else if (state.pressState === 'GOING_DOWN') {
+    if (y > state.pressBottomY) {
+      state.pressBottomY = y;
+      state.pressBottomT = t;
+      state.pressBottomX = palm.x;
+    }
+    if (dy < -0.5 && state.pressBottomY - y > 1.5) {
+      const amp = state.pressBottomY - state.pressTopY;
+      if (amp >= state.PRESS_MIN_AMPLITUDE_PX &&
+          (state.pressBottomT - state.lastPressDetectedT) >= minInterval) {
+        const press = {
+          t: state.pressBottomT, x: state.pressBottomX, y: state.pressBottomY,
+          topY: state.pressTopY, bottomY: state.pressBottomY, ampPx: amp
+        };
+        state.lastPressDetectedT = state.pressBottomT;
+        state.pressState = 'WAITING_RECOVERY';
+        return press;
+      } else {
+        state.pressState = 'IDLE';
+        state.pressTopY = y;
+      }
+    }
+  } else if (state.pressState === 'WAITING_RECOVERY') {
+    const amp = state.pressBottomY - state.pressTopY;
+    const recoveryAmount = state.pressBottomY - y;
+    if (recoveryAmount >= amp * state.PRESS_RECOVERY_RATIO) {
+      state.pressState = 'IDLE';
+      state.pressTopY = y;
+    }
+  }
+  return null;
+}
+
+function flashPress() {
+  pressFlash.classList.add('flash');
+  setTimeout(() => pressFlash.classList.remove('flash'), 150);
+}
+
+// ════════════════════════════════════════════════════════════════
+// Phase
+// ════════════════════════════════════════════════════════════════
+function setPhase(phase) {
+  state.phase = phase;
+  state.readyStartT = null;
+  state.pressState = 'IDLE';
+  state.pressTopY = null;
+  state.pressBottomY = null;
+
+  // 모든 오버레이 초기화
+  $('breathOverlay').classList.remove('active');
+  $('countdownOverlay').classList.remove('active');
+  $('returnOverlay').classList.remove('active');
+
+  // HUD 표시 범위 결정
+  const showMeasureHUD = [PHASE.MEASURING, PHASE.BREATH, PHASE.COUNTDOWN, PHASE.RETURN].includes(phase);
+  $('centerInfo').style.display = showMeasureHUD ? 'block' : 'none';
+  $('countBlock').style.display = showMeasureHUD ? 'block' : 'none';
+  $('hudTimer').style.display = showMeasureHUD ? 'block' : 'none';
+  $('bottomControls').style.display = showMeasureHUD ? 'flex' : 'none';
+  document.body.classList.toggle('measuring', showMeasureHUD);
+
+  const showEval = (phase === PHASE.MEASURING) && (state.evalDepth || state.evalPosition);
+  $('evalChips').style.display = showEval ? 'flex' : 'none';
+  $('depthChip').style.display = (state.evalDepth && phase === PHASE.MEASURING) ? 'block' : 'none';
+  $('posChip').style.display = (state.evalPosition && phase === PHASE.MEASURING) ? 'block' : 'none';
+
+  if (phase === PHASE.WAITING) {
+    setHudPill('hudPhase', 'warn', '준비');
+    showBanner('WAITING', '자세를 잡아주세요',
+      '손을 마네킹 가슴에 올리고<br>압박 자세를 잡으세요.',
+      `<div class="ready-checklist" id="readyChecklist">
+        <div class="check-item" id="checkHand"><span class="check-icon">✓</span>손 검출</div>
+        <div class="check-item" id="checkStability"><span class="check-icon">✓</span>자세 안정 (1.5초)</div>
+      </div>`,
+      'warn'
+    );
+
+  } else if (phase === PHASE.CALIBRATING) {
+    state.calibPresses = [];
+    state.PRESS_MIN_AMPLITUDE_PX = 8;
+    setHudPill('hudPhase', 'info', '캘리브레이션');
+    $('calibCounter').classList.remove('hidden');
+    updateCalibCounter();
+    showBanner('CALIBRATION', '5번 눌러주세요',
+      '클릭 소리가 날 만큼<br>강하게 <b>5번</b> 압박하세요.', '', 'ok');
+    speak('이제 다섯 번 눌러주세요.');
+    setTimeout(() => { if (state.phase === PHASE.CALIBRATING) hideBanner(); }, 2200);
+
+  } else if (phase === PHASE.COUNTDOWN) {
+    // 3초 카운트다운
+    setHudPill('hudPhase', 'warn', '카운트다운');
+    $('calibCounter').classList.add('hidden');
+    hideBanner();
+    state.countdownStartT = performance.now();
+    $('countdownOverlay').classList.add('active');
+    $('countdownNum').textContent = '3';
+    $('countdownLabel').textContent = '준비';
+    $('countdownDesc').textContent = '시작하세요';
+    speak('셋');
+
+  } else if (phase === PHASE.MEASURING) {
+    setHudPill('hudPhase', 'ok', '측정 중');
+    $('calibCounter').classList.add('hidden');
+    hideBanner();
+    // 첫 사이클이면 세션 시작 시각 기록 (카운트다운 후 처음 진입할 때만)
+    if (state.sessionStartT === 0) {
+      state.sessionStartT = performance.now();
+      state.sessionEndT = state.sessionStartT + state.durationSec * 1000;
+      state.cycleNum = state.mode === 'cycle' ? 1 : 0;
+      state.cycleCompressionCount = 0;
+      state.presses = [];
+      $('totalCountText').textContent = '0';
+    }
+    updateSessionTimer(performance.now());
+    speak('강하게 빠르게 누르세요.');
+
+  } else if (phase === PHASE.BREATH) {
+    setHudPill('hudPhase', 'info', '인공호흡');
+    state.breathStartT = performance.now();
+    $('breathOverlay').classList.add('active');
+    speak('인공호흡 두 번. 하나, 둘.');
+
+  } else if (phase === PHASE.RETURN) {
+    // 인공호흡 후 손 복귀 대기
+    setHudPill('hudPhase', 'warn', '압박점 복귀');
+    state.returnReadyT = null;
+    $('returnOverlay').classList.add('active');
+    speak('손을 압박점에 올려주세요.');
+
+  } else if (phase === PHASE.ENDED) {
+    setHudPill('hudPhase', 'ok', '완료');
+    speak('훈련이 종료되었습니다.');
+    finishSession();
+  }
+}
+
+function showBanner(status, title, desc, extra = '', statusClass = '') {
+  $('bannerStatus').textContent = status;
+  $('bannerStatus').className = 'banner-status ' + statusClass;
+  $('bannerTitle').textContent = title;
+  $('bannerDesc').innerHTML = desc;
+  $('bannerExtra').innerHTML = extra;
+  $('centerBanner').classList.remove('hidden');
+}
+function hideBanner() { $('centerBanner').classList.add('hidden'); }
+
+function updateCalibCounter() {
+  document.querySelectorAll('.calib-dot').forEach((el, i) => {
+    el.classList.remove('done', 'active');
+    if (i < state.calibPresses.length) el.classList.add('done');
+    else if (i === state.calibPresses.length) el.classList.add('active');
+  });
+}
+
+function completeCalibration() {
+  const n = state.calibPresses.length;
+  const avgX = state.calibPresses.reduce((s, p) => s + p.x, 0) / n;
+  const avgY = state.calibPresses.reduce((s, p) => s + p.y, 0) / n;
+  const avgAmp = state.calibPresses.reduce((s, p) => s + p.ampPx, 0) / n;
+  state.calibTarget = { x: avgX, y: avgY };
+  state.calibAmpPx = avgAmp;
+  state.pxPerCm = avgAmp / 5;
+  state.PRESS_MIN_AMPLITUDE_PX = Math.max(8, avgAmp * 0.4);
+  showBanner('SUCCESS', '✓ 캘리브레이션 완료',
+    `압박점·깊이 기준 설정 완료.`, '', 'ok');
+  speak('캘리브레이션 완료.');
+  // 1초 후 카운트다운 시작
+  setTimeout(() => {
+    state.sessionStartT = 0; // 초기화 (MEASURING 진입 시 설정됨)
+    setPhase(PHASE.COUNTDOWN);
+  }, 1000);
+}
+
+function checkReadiness(t, palm) {
+  if (!palm) {
+    state.readyStartT = null;
+    updateReadyChecklist(false, false, 0);
+    return;
+  }
+  const stab = computeStability(t, 1500);
+  const handOk = true;
+  const stabilityOk = stab && stab.stdPx < STABILITY_THRESHOLD_PX && stab.count >= 30;
+  if (handOk && stabilityOk) {
+    if (state.readyStartT === null) state.readyStartT = t;
+    const elapsed = t - state.readyStartT;
+    const progress = Math.min(1, elapsed / READY_HOLD_MS);
+    updateReadyChecklist(handOk, stabilityOk, progress);
+    if (elapsed >= READY_HOLD_MS) {
+      state.sessionStartT = 0;
+      // 평가 항목이 모두 꺼져 있으면 캘리브레이션 건너뜀
+      if (!state.evalDepth && !state.evalPosition) {
+        setPhase(PHASE.COUNTDOWN);
+      } else {
+        setPhase(PHASE.CALIBRATING);
+      }
+    }
+  } else {
+    state.readyStartT = null;
+    updateReadyChecklist(handOk, false, 0);
+  }
+}
+
+function updateReadyChecklist(handOk, stabilityOk, progress) {
+  const cHand = $('checkHand'), cStab = $('checkStability');
+  if (cHand) cHand.classList.toggle('done', handOk);
+  if (cStab) cStab.classList.toggle('done', stabilityOk);
+  if (handOk && stabilityOk) {
+    const bar = `<div class="ready-progress"><div class="ready-progress-bar" style="width:${(progress*100).toFixed(0)}%"></div></div>`;
+    const checklist = $('readyChecklist');
+    if (checklist && !document.getElementById('readyProgress')) {
+      checklist.insertAdjacentHTML('afterend', `<div id="readyProgress">${bar}</div>`);
+    } else if (document.getElementById('readyProgress')) {
+      document.getElementById('readyProgress').innerHTML = bar;
+    }
+  } else {
+    const rp = document.getElementById('readyProgress');
+    if (rp) rp.remove();
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// Session timer & 30:2
+// ════════════════════════════════════════════════════════════════
+function updateSessionTimer(now) {
+  const remaining = Math.max(0, state.sessionEndT - now);
+  const totalSec = Math.ceil(remaining / 1000);
+  const m = Math.floor(totalSec / 60), s = totalSec % 60;
+  $('hudTimeText').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  if (state.mode === 'cycle') {
+    $('hudCycleText').textContent = `사이클 ${state.cycleNum} · ${state.cycleCompressionCount}/30`;
+  } else {
+    $('hudCycleText').textContent = `연속`;
+  }
+  if (remaining <= 0 && state.phase !== PHASE.ENDED) setPhase(PHASE.ENDED);
+}
+
+// ════════════════════════════════════════════════════════════════
+// 카운트다운 처리
+// ════════════════════════════════════════════════════════════════
+function handleCountdown(now) {
+  const elapsed = now - state.countdownStartT;
+  const remaining = Math.ceil((3000 - elapsed) / 1000);
+
+  if (elapsed < 1000) {
+    $('countdownNum').textContent = '3';
+    $('countdownLabel').textContent = '준비';
+  } else if (elapsed < 2000) {
+    if ($('countdownNum').textContent !== '2') {
+      $('countdownNum').textContent = '2';
+      speak('둘');
+    }
+  } else if (elapsed < 3000) {
+    if ($('countdownNum').textContent !== '1') {
+      $('countdownNum').textContent = '1';
+      speak('하나');
+    }
+  } else {
+    // 카운트다운 끝 → 측정 시작
+    $('countdownOverlay').classList.remove('active');
+    speak('시작!');
+    setPhase(PHASE.MEASURING);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// 인공호흡 후 손 복귀 감지
+// ════════════════════════════════════════════════════════════════
+function handleReturn(now, palm) {
+  if (!state.calibTarget || !state.pxPerCm || !palm) {
+    state.returnReadyT = null;
+    return;
+  }
+  const distPx = Math.hypot(palm.x - state.calibTarget.x, palm.y - state.calibTarget.y);
+  const distCm = distPx / state.pxPerCm;
+
+  // 손이 목표점 반경 5cm 이내에 1초 이상 안정되어 있으면 시작
+  if (distCm <= 5) {
+    if (state.returnReadyT === null) state.returnReadyT = now;
+    const held = now - state.returnReadyT;
+    // 0.8초 안정 후 시작 (너무 오래 기다리지 않도록)
+    if (held >= 800) {
+      $('returnOverlay').classList.remove('active');
+      state.cycleNum++;
+      state.cycleCompressionCount = 0;
+      setPhase(PHASE.MEASURING);
+      speak(`${state.cycleNum}번째 사이클. 시작하세요.`);
+    }
+  } else {
+    state.returnReadyT = null;
+  }
+}
+
+function handleBreathOverlay(now) {
+  const elapsed = now - state.breathStartT;
+  const remaining = Math.max(0, BREATH_DURATION_MS - elapsed);
+  $('breathNum').textContent = Math.ceil(remaining / 1000);
+  if (elapsed >= BREATH_DURATION_MS) {
+    $('breathOverlay').classList.remove('active');
+    // 30:2 모드에서 위치 평가가 켜져 있으면 복귀 감지 단계로
+    if (state.mode === 'cycle' && state.evalPosition && state.calibTarget) {
+      setPhase(PHASE.RETURN);
+    } else {
+      // 위치 평가 없으면 바로 다음 사이클
+      state.cycleNum++;
+      state.cycleCompressionCount = 0;
+      setPhase(PHASE.MEASURING);
+      speak(`${state.cycleNum}번째 사이클. 시작하세요.`);
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// Press evaluation
+// ════════════════════════════════════════════════════════════════
+function evaluatePress(press) {
+  // 평가 항목이 모두 꺼져 있으면 압박 효과음만 재생하고 종료
+  if (!state.evalDepth && !state.evalPosition) {
+    if (settings.pressBeepOn) beep(660, 0.06, 0.15, 'sine');
+    return;
+  }
+
+  if (!state.pxPerCm) return;
+
+  // 깊이 평가 (켜져 있을 때만)
+  let depthClass = null;
+  if (state.evalDepth) {
+    const depthCm = press.ampPx / state.pxPerCm;
+    let depthEval;
+    if (depthCm >= 4 && depthCm <= 7) { depthEval = '좋음'; depthClass = 'good'; }
+    else { depthEval = '나쁨'; depthClass = 'bad'; }
+    press.depthCm = depthCm;
+    press.depthClass = depthClass;
+    const depthChip = $('depthChip');
+    depthChip.className = 'eval-chip ' + depthClass;
+    $('depthEvalText').textContent = depthEval;
+  }
+
+  // 위치 평가 (켜져 있을 때만)
+  if (state.evalPosition && state.calibTarget) {
+    const distPx = Math.hypot(press.x - state.calibTarget.x, press.y - state.calibTarget.y);
+    const distCm = distPx / state.pxPerCm;
+    let posEval, posClass;
+    if (distCm <= 3) { posEval = '좋음'; posClass = 'good'; }
+    else if (distCm <= 6) { posEval = '경계'; posClass = 'warn'; }
+    else { posEval = '나쁨'; posClass = 'bad'; }
+    press.distCm = distCm;
+    press.posClass = posClass;
+    const posChip = $('posChip');
+    posChip.className = 'eval-chip ' + posClass;
+    $('posEvalText').textContent = posEval;
+  }
+
+  // 효과음: 깊이 평가가 있으면 그것 기준, 없으면 일반 톤
+  if (depthClass) {
+    pressBeep(depthClass === 'good' ? 'good' : depthClass === 'warn' ? 'warn' : 'bad');
+  } else if (settings.pressBeepOn) {
+    beep(660, 0.06, 0.15, 'sine');
+  }
+
+  setTimeout(() => coachAfterPress(), 50);
+}
+
+function coachAfterPress() {
+  if (state.phase !== PHASE.MEASURING) return;
+  if (state.presses.length < 4) return;
+
+  // 깊이 코칭 (평가 항목 켜져 있고 캘리브레이션 됐을 때만)
+  if (state.evalDepth && state.pxPerCm) {
+    const last3 = state.presses.slice(-3);
+    const allLow = last3.every(p => (p.ampPx / state.pxPerCm) < 4);
+    const allHigh = last3.every(p => (p.ampPx / state.pxPerCm) > 7);
+    if (allLow) { coach('depthLow', '더 깊게 눌러주세요', 'warn', 6000); return; }
+    if (allHigh) { coach('depthHigh', '조금 약하게 눌러주세요', 'warn', 6000); return; }
+  }
+
+  // 위치 코칭 (평가 항목 켜져 있고 캘리브레이션 됐을 때만)
+  if (state.evalPosition && state.calibTarget && state.pxPerCm) {
+    const last2 = state.presses.slice(-2);
+    const allBad = last2.every(p => {
+      const d = Math.hypot(p.x - state.calibTarget.x, p.y - state.calibTarget.y) / state.pxPerCm;
+      return d > 6;
+    });
+    if (allBad) { coach('posBad', '압박 위치를 다시 잡으세요', 'bad', 6000); return; }
+  }
+
+  // 박자 코칭 (항상)
+  const bpm = calcBPM(performance.now());
+  if (bpm !== null) {
+    if (bpm < 95) { coach('slow', '조금 더 빠르게', 'warn', 8000); return; }
+    if (bpm > 125) { coach('fast', '조금 천천히', 'warn', 8000); return; }
+  }
+
+  // 격려 (모든 활성화된 평가 항목이 양호할 때)
+  if (state.presses.length >= 8) {
+    const last8 = state.presses.slice(-8);
+    const depthOk = !state.evalDepth || last8.every(p => p.depthClass === 'good');
+    const posOk = !state.evalPosition || (state.calibTarget && last8.every(p => p.posClass === 'good'));
+    if (depthOk && posOk && bpm >= 100 && bpm <= 120) {
+      coach('encourage', '잘 하고 있습니다', 'good', 30000);
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// ECG (smooth)
+// ════════════════════════════════════════════════════════════════
+function updateEcg(now, palm) {
+  const dt = 1000 / 120;
+  const ALPHA = 0.25;
+  let prevV = state.ecgBuffer.length ? state.ecgBuffer[state.ecgBuffer.length - 1].v : 0;
+
+  // 적응형 진폭 기준: 캘리브레이션 값이 있으면 그것 사용, 없으면 최근 압박들의 평균 진폭
+  let refAmp;
+  if (state.calibAmpPx) {
+    refAmp = state.calibAmpPx;
+  } else if (state.presses.length >= 2) {
+    // 최근 5개 압박의 평균 진폭
+    const recent = state.presses.slice(-5);
+    refAmp = recent.reduce((s, p) => s + p.ampPx, 0) / recent.length;
+  } else {
+    refAmp = 80; // 초기값
+  }
+
+  while (lastEcgT < now) {
+    let raw = 0;
+    if (palm) {
+      state.ecgYBaselineRecent.push({ t: lastEcgT, y: palm.y });
+      while (state.ecgYBaselineRecent.length &&
+             state.ecgYBaselineRecent[0].t < lastEcgT - 2000) {
+        state.ecgYBaselineRecent.shift();
+      }
+      if (state.ecgYBaselineRecent.length >= 5) {
+        const minY = Math.min(...state.ecgYBaselineRecent.map(s => s.y));
+        state.ecgYBaseline = minY;
+      }
+      if (state.ecgYBaseline !== null) {
+        const delta = palm.y - state.ecgYBaseline;
+        const norm = delta / refAmp;
+        raw = Math.pow(Math.max(0, norm), 0.7) * 1.1;
+      }
+    }
+    const filtered = prevV + ALPHA * (raw - prevV);
+    prevV = filtered;
+    state.ecgBuffer.push({ t: lastEcgT, v: filtered });
+    lastEcgT += dt;
+  }
+  const cutoff = now - 5000;
+  while (state.ecgBuffer.length && state.ecgBuffer[0].t < cutoff) state.ecgBuffer.shift();
+}
+
+function catmullRomToBezier(p0, p1, p2, p3) {
+  return [
+    { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 },
+    { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 },
+    { x: p2.x, y: p2.y }
+  ];
+}
+
+function drawEcg() {
+  const W = ecgCanvas.width, H = ecgCanvas.height;
+  ecgCtx.clearRect(0, 0, W, H);
+  if (!settings.ecgOn) return;
+
+  ecgCtx.strokeStyle = 'rgba(0, 255, 136, 0.06)';
+  ecgCtx.lineWidth = 1;
+  for (let x = 0; x < W; x += 25) {
+    ecgCtx.beginPath();
+    ecgCtx.moveTo(x, 0); ecgCtx.lineTo(x, H);
+    ecgCtx.stroke();
+  }
+  for (let y = 0; y < H; y += 25) {
+    ecgCtx.beginPath();
+    ecgCtx.moveTo(0, y); ecgCtx.lineTo(W, y);
+    ecgCtx.stroke();
+  }
+
+  ecgCtx.fillStyle = 'rgba(0, 255, 136, 0.6)';
+  ecgCtx.font = 'bold 10px JetBrains Mono, monospace';
+  ecgCtx.fillText('ECG', 8, 14);
+
+  if (state.ecgBuffer.length < 2) return;
+  const now = performance.now();
+  const tEnd = now;
+  const tStart = tEnd - 5000;
+  const baselineY = H * 0.72;
+  const ampScale = H * 0.55;
+
+  const pts = [];
+  state.ecgBuffer.forEach(s => {
+    if (s.t < tStart) return;
+    const px = ((s.t - tStart) / 5000) * W;
+    const py = baselineY - s.v * ampScale;
+    pts.push({ x: px, y: py });
+  });
+  if (pts.length < 2) return;
+
+  ecgCtx.strokeStyle = '#00FF7F';
+  ecgCtx.lineWidth = 2;
+  ecgCtx.lineCap = 'round'; ecgCtx.lineJoin = 'round';
+  ecgCtx.shadowColor = '#00FF7F'; ecgCtx.shadowBlur = 5;
+  ecgCtx.beginPath();
+  ecgCtx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || p2;
+    const [c1, c2, end] = catmullRomToBezier(p0, p1, p2, p3);
+    ecgCtx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
+  }
+  ecgCtx.stroke();
+  ecgCtx.shadowBlur = 0;
+
+  ecgCtx.strokeStyle = 'rgba(0, 255, 127, 0.4)';
+  ecgCtx.lineWidth = 1;
+  ecgCtx.beginPath();
+  ecgCtx.moveTo(W - 1, 0); ecgCtx.lineTo(W - 1, H);
+  ecgCtx.stroke();
+}
+
+// ════════════════════════════════════════════════════════════════
+// Drawing target & palm
+// ════════════════════════════════════════════════════════════════
+function drawTarget(point, radiusPx, distCm) {
+  if (!point) return;
+  const { x, y } = point;
+  let color = '#FF4D6D';
+  if (distCm !== null && distCm <= 3) color = '#00FF88';
+  else if (distCm !== null && distCm <= 6) color = '#FFB020';
+
+  const t = (Date.now() % 1500) / 1500;
+  ctx.globalAlpha = 0.6 * (1 - t);
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, radiusPx + t * 30, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = color; ctx.globalAlpha = 0.6;
+  ctx.setLineDash([6, 4]); ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, radiusPx, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+  ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function drawPalm(point) {
+  if (!point) return;
+  ctx.fillStyle = '#FFB020'; ctx.shadowColor = '#FFB020'; ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function calcBPM(now) {
+  const window = state.presses.filter(p => p.t > now - 6000);
+  if (window.length < 2) return null;
+  const dur = (window[window.length - 1].t - window[0].t) / 1000;
+  if (dur < 1) return null;
+  return ((window.length - 1) / dur) * 60;
+}
+
+function updateMetronome(now) {
+  if (!settings.metronomeOn || state.phase !== PHASE.MEASURING) return;
+  const interval = 60000 / state.metronomeBpm;
+  if (state.metronomeNextT === 0) state.metronomeNextT = now + interval;
+  while (state.metronomeNextT <= now) {
+    metronomeTick();
+    state.metronomeNextT += interval;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// Main loop
+// ════════════════════════════════════════════════════════════════
+function loop() {
+  if (!state.running) return;
+  const now = performance.now();
+  state.lastFrameTime = now;
+
+  updateEcg(now, latestPalm);
+  drawEcg();
+  updateMetronome(now);
+
+  if (state.phase === PHASE.MEASURING || state.phase === PHASE.BREATH ||
+      state.phase === PHASE.COUNTDOWN || state.phase === PHASE.RETURN) {
+    if (state.sessionStartT > 0) updateSessionTimer(now);
+  }
+  if (state.phase === PHASE.BREATH) {
+    handleBreathOverlay(now);
+  }
+  if (state.phase === PHASE.COUNTDOWN) {
+    handleCountdown(now);
+  }
+
+  if (video.currentTime !== state.lastVideoTime && video.readyState >= 2) {
+    state.lastVideoTime = video.currentTime;
+    const ts = performance.now();
+    const handRes = state.handLandmarker.detectForVideo(video, ts);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (settings.showHands && handRes.landmarks?.length > 0) {
+      drawHands(handRes.landmarks, canvas.width, canvas.height);
+    }
+
+    const palm = computePalm(handRes, canvas.width, canvas.height);
+    latestPalm = palm;
+    const handCount = handRes.landmarks?.length || 0;
+    if (palm) updatePalmHistory(palm, ts);
+
+    if (state.phase === PHASE.WAITING) {
+      checkReadiness(ts, palm);
+    } else if (state.phase === PHASE.RETURN) {
+      // 복귀 단계: 손 위치 감지, 목표점 크게 표시
+      handleReturn(ts, palm);
+    } else if (state.phase === PHASE.CALIBRATING || state.phase === PHASE.MEASURING) {
+      if (palm) {
+        const press = processPressStateMachine(ts, palm);
+        if (press) {
+          flashPress();
+          if (state.phase === PHASE.CALIBRATING) {
+            state.calibPresses.push(press);
+            updateCalibCounter();
+            if (settings.pressBeepOn) beep(660, 0.06, 0.15, 'sine');
+            if (state.calibPresses.length >= CALIB_PRESS_COUNT) completeCalibration();
+          } else if (state.phase === PHASE.MEASURING) {
+            state.presses.push(press);
+            $('totalCountText').textContent = state.presses.length;
+            evaluatePress(press);
+            if (state.mode === 'cycle') {
+              state.cycleCompressionCount++;
+              if (state.cycleCompressionCount >= COMPRESSIONS_PER_CYCLE) {
+                setPhase(PHASE.BREATH);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (handCount > 0) setHudPill('hudHand', 'ok', `손 ${handCount}`);
+    else setHudPill('hudHand', 'warn', '손 없음');
+
+    if (state.phase === PHASE.MEASURING) {
+      const bpm = calcBPM(ts);
+      const bpmEl = $('bpmBig');
+      if (bpm !== null) {
+        bpmEl.textContent = Math.round(bpm);
+        if (bpm >= 100 && bpm <= 120) bpmEl.className = 'bpm-big good';
+        else if (bpm < 100) bpmEl.className = 'bpm-big slow';
+        else bpmEl.className = 'bpm-big fast';
+      } else {
+        bpmEl.textContent = '—';
+        bpmEl.className = 'bpm-big';
+      }
+    }
+
+    if (state.calibTarget && state.pxPerCm) {
+      let distCm = null;
+      if (palm) {
+        const distPx = Math.hypot(palm.x - state.calibTarget.x, palm.y - state.calibTarget.y);
+        distCm = distPx / state.pxPerCm;
+      }
+      // RETURN 단계에서는 목표 원을 더 크게 (5cm 반경) 표시해 복귀 가이드
+      const guideRadius = state.phase === PHASE.RETURN
+        ? state.pxPerCm * 5
+        : state.pxPerCm * 3;
+      drawTarget(state.calibTarget, guideRadius, distCm);
+    }
+    if (palm) drawPalm(palm);
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// ════════════════════════════════════════════════════════════════
+// Session start/stop
+// ════════════════════════════════════════════════════════════════
+$('startTrainingBtn').addEventListener('click', async () => {
+  navigate('training');
+  setLoading('초기화 중...');
+  await startSession();
+});
+
+async function startSession() {
+  try {
+    initAudio();
+    await enableAudio();
+    if (!state.handLandmarker) await initMediaPipe();
+    const ok = await startCamera();
+    if (!ok) return;
+    hideLoading();
+    state.running = true;
+    state.lastFrameTime = performance.now();
+    lastEcgT = performance.now();
+    state.metronomeNextT = 0;
+    state.ecgBuffer = [];
+    state.ecgYBaseline = null;
+    state.ecgYBaselineRecent = [];
+    state.presses = [];
+    state.calibPresses = [];
+    state.calibTarget = null;
+    state.pxPerCm = null;
+    state.PRESS_MIN_AMPLITUDE_PX = 8;
+    setPhase(PHASE.WAITING);
+    loop();
+  } catch (err) {
+    console.error(err);
+    setLoading(`초기화 실패: ${err.message}`, false);
+  }
+}
+
+function stopSession() {
+  state.running = false;
+  stopCamera();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ecgCtx.clearRect(0, 0, ecgCanvas.width, ecgCanvas.height);
+  setHudPill('hudHand', '', 'Hand 대기');
+  setHudPill('hudPhase', '', '대기');
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  $('breathOverlay').classList.remove('active');
+  $('countdownOverlay').classList.remove('active');
+  $('returnOverlay').classList.remove('active');
+  document.body.classList.remove('measuring');
+  state.phase = PHASE.IDLE;
+  state.sessionStartT = 0;
+}
+
+// ════════════════════════════════════════════════════════════════
+// Result
+// ════════════════════════════════════════════════════════════════
+function finishSession() {
+  const result = computeResults();
+  state.lastResult = result;
+  saveRecord(result);
+  renderResult(result);
+  setTimeout(() => {
+    stopSession();
+    navigate('result');
+  }, 1500);
+}
+
+function computeResults() {
+  // depthCm 필터를 제거 (평가 안 한 경우 undefined일 수 있음)
+  const presses = state.presses;
+  const total = presses.length;
+  let bpmInRangeRatio = 0, depthGoodRatio = 0, posGoodRatio = 0, avgBpm = 0;
+  if (total >= 2) {
+    let inRange = 0, totalIntervals = 0, bpmSum = 0;
+    for (let i = 1; i < presses.length; i++) {
+      const dt = (presses[i].t - presses[i - 1].t) / 1000;
+      if (dt < 0.2 || dt > 3) continue;
+      const bpm = 60 / dt;
+      bpmSum += bpm;
+      totalIntervals++;
+      if (bpm >= 100 && bpm <= 120) inRange++;
+    }
+    if (totalIntervals > 0) {
+      bpmInRangeRatio = inRange / totalIntervals;
+      avgBpm = bpmSum / totalIntervals;
+    }
+    if (state.evalDepth) {
+      const evaluated = presses.filter(p => p.depthClass !== undefined);
+      depthGoodRatio = evaluated.length > 0 ? evaluated.filter(p => p.depthClass === 'good').length / evaluated.length : 0;
+    }
+    if (state.evalPosition && state.calibTarget) {
+      const evaluated = presses.filter(p => p.posClass !== undefined);
+      posGoodRatio = evaluated.length > 0 ? evaluated.filter(p => p.posClass === 'good').length / evaluated.length : 0;
+    }
+  }
+
+  // 종합 점수: 활성화된 평가 항목들의 평균
+  const activeMetrics = [bpmInRangeRatio];
+  if (state.evalDepth) activeMetrics.push(depthGoodRatio);
+  if (state.evalPosition) activeMetrics.push(posGoodRatio);
+  const overall = activeMetrics.reduce((s, v) => s + v, 0) / activeMetrics.length;
+
+  let grade;
+  if (overall >= 0.95) grade = 'S';
+  else if (overall >= 0.85) grade = 'A';
+  else if (overall >= 0.70) grade = 'B';
+  else if (overall >= 0.50) grade = 'C';
+  else grade = 'D';
+  return {
+    sessionId: 'sess_' + Date.now(),
+    startedAt: new Date().toISOString(),
+    durationSec: state.durationSec,
+    mode: state.mode,
+    evalDepth: state.evalDepth,
+    evalPosition: state.evalPosition,
+    totalCompressions: total,
+    avgBpm, bpmInRangeRatio, depthGoodRatio, posGoodRatio,
+    overallScore: overall, grade,
+    presses: presses.map(p => ({
+      t: p.t - (presses[0]?.t || 0),
+      depthCm: p.depthCm, depthClass: p.depthClass,
+      posClass: p.posClass, distCm: p.distCm
+    }))
+  };
+}
+
+function renderResult(r) {
+  const card = $('resultGradeCard');
+  card.className = 'result-grade-card ' + r.grade;
+  $('resultGradeLetter').textContent = r.grade;
+  const labels = { S: '탁월합니다!', A: '우수합니다', B: '양호합니다', C: '보통입니다', D: '재훈련을 권장합니다' };
+  $('resultGradeLabel').textContent = labels[r.grade] || '';
+  $('resultGradeComment').textContent = `${(r.overallScore * 100).toFixed(0)}점 · 압박 ${r.totalCompressions}회 · ${Math.floor(r.durationSec/60)}분 ${r.durationSec%60}초`;
+  $('rmAvgBpm').textContent = r.avgBpm > 0 ? r.avgBpm.toFixed(0) : '—';
+  $('rmAvgBpmSub').textContent = r.avgBpm >= 100 && r.avgBpm <= 120 ? '✓ 적정' : r.avgBpm < 100 ? '느림' : '빠름';
+  $('rmBpmRatio').textContent = (r.bpmInRangeRatio * 100).toFixed(0) + '%';
+
+  // 평가 항목에 따라 카드 표시 (이전 기록 호환을 위해 evalDepth/evalPosition 없으면 true로 간주)
+  const showDepth = r.evalDepth !== false;
+  const showPos = r.evalPosition !== false;
+  $('rmDepthCard').style.display = showDepth ? '' : 'none';
+  $('rmPosCard').style.display = showPos ? '' : 'none';
+  if (showDepth) $('rmDepthRatio').textContent = (r.depthGoodRatio * 100).toFixed(0) + '%';
+  if (showPos) $('rmPosRatio').textContent = (r.posGoodRatio * 100).toFixed(0) + '%';
+
+  const weak = [];
+  if (r.bpmInRangeRatio < 0.7) {
+    if (r.avgBpm < 100) weak.push('박자가 다소 느렸습니다. 메트로놈을 활용해보세요.');
+    else if (r.avgBpm > 120) weak.push('박자가 다소 빨랐습니다. 100~120 BPM을 유지하세요.');
+    else weak.push('박자의 일관성을 더 높여보세요.');
+  }
+  if (showDepth && r.depthGoodRatio < 0.7) weak.push('충분한 깊이의 압박을 더 자주 유지하세요.');
+  if (showPos && r.posGoodRatio < 0.7) weak.push('손이 압박점을 더 정확하게 누르도록 유지하세요.');
+  if (weak.length === 0) weak.push('전반적으로 매우 우수한 압박이었습니다. 이 페이스를 유지하세요.');
+  $('resultComment').innerHTML = weak.map(w => `• ${w}`).join('<br>');
+  drawTimeline(r);
+}
+
+function drawTimeline(r) {
+  const cv = $('timelineCanvas');
+  const rect = cv.getBoundingClientRect();
+  cv.width = rect.width; cv.height = rect.height;
+  const tx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  tx.clearRect(0, 0, W, H);
+  tx.fillStyle = '#000'; tx.fillRect(0, 0, W, H);
+  tx.strokeStyle = 'rgba(255,255,255,0.05)';
+  for (let x = 0; x < W; x += W / 10) {
+    tx.beginPath(); tx.moveTo(x, 0); tx.lineTo(x, H); tx.stroke();
+  }
+  for (let y = 0; y < H; y += H / 4) {
+    tx.beginPath(); tx.moveTo(0, y); tx.lineTo(W, y); tx.stroke();
+  }
+  if (!r.presses || r.presses.length < 2) {
+    tx.fillStyle = '#666';
+    tx.font = '12px JetBrains Mono';
+    tx.textAlign = 'center';
+    tx.fillText('데이터 부족', W / 2, H / 2);
+    return;
+  }
+  const tMax = r.durationSec * 1000;
+  const bandH = H * 0.18;
+  r.presses.forEach((p, i) => {
+    const next = r.presses[i + 1];
+    const x1 = (p.t / tMax) * W;
+    const x2 = next ? (next.t / tMax) * W : x1 + 4;
+    if (p.depthClass === 'good') tx.fillStyle = 'rgba(76, 201, 255, 0.6)';
+    else if (p.depthClass === 'warn') tx.fillStyle = 'rgba(255, 176, 32, 0.4)';
+    else tx.fillStyle = 'rgba(255, 77, 109, 0.3)';
+    tx.fillRect(x1, 4, x2 - x1, bandH / 2);
+    if (p.posClass === 'good') tx.fillStyle = 'rgba(183, 148, 244, 0.6)';
+    else if (p.posClass === 'warn') tx.fillStyle = 'rgba(255, 176, 32, 0.4)';
+    else tx.fillStyle = 'rgba(255, 77, 109, 0.3)';
+    tx.fillRect(x1, 4 + bandH / 2 + 2, x2 - x1, bandH / 2);
+  });
+  const points = [];
+  for (let i = 1; i < r.presses.length; i++) {
+    const dt = (r.presses[i].t - r.presses[i - 1].t) / 1000;
+    if (dt < 0.2 || dt > 3) continue;
+    const bpm = 60 / dt;
+    const tMid = (r.presses[i].t + r.presses[i - 1].t) / 2;
+    points.push({ t: tMid, bpm });
+  }
+  const bpmTop = bandH + 10;
+  const bpmBottom = H - 18;
+  const bpmRange = bpmBottom - bpmTop;
+  const bpmMin = 60, bpmMax = 160;
+  const bpmToY = b => bpmBottom - ((b - bpmMin) / (bpmMax - bpmMin)) * bpmRange;
+  tx.fillStyle = 'rgba(0, 255, 136, 0.08)';
+  tx.fillRect(0, bpmToY(120), W, bpmToY(100) - bpmToY(120));
+  tx.strokeStyle = '#00FF88';
+  tx.lineWidth = 2;
+  tx.lineJoin = 'round'; tx.lineCap = 'round';
+  tx.beginPath();
+  points.forEach((p, i) => {
+    const x = (p.t / tMax) * W;
+    const y = bpmToY(p.bpm);
+    if (i === 0) tx.moveTo(x, y);
+    else tx.lineTo(x, y);
+  });
+  tx.stroke();
+  tx.fillStyle = '#666';
+  tx.font = '9px JetBrains Mono';
+  tx.textAlign = 'left';
+  tx.fillText('120', 4, bpmToY(120) + 8);
+  tx.fillText('100', 4, bpmToY(100) + 8);
+}
+
+// ════════════════════════════════════════════════════════════════
+// Records
+// ════════════════════════════════════════════════════════════════
+function renderRecords() {
+  const records = loadRecords();
+  $('recTotalSessions').textContent = records.length;
+  if (records.length === 0) {
+    $('recAvgGrade').textContent = '—';
+    $('recBestGrade').textContent = '—';
+    $('recordList').innerHTML = `
+      <div class="empty-state">
+        <h4>아직 훈련 기록이 없습니다</h4>
+        <p>첫 훈련을 시작하면 결과가 누적됩니다.</p>
+      </div>`;
+    return;
+  }
+  const gradeOrder = { S: 5, A: 4, B: 3, C: 2, D: 1 };
+  const avgNum = records.reduce((s, r) => s + (gradeOrder[r.grade] || 0), 0) / records.length;
+  const avgGrade = ['', 'D', 'C', 'B', 'A', 'S'][Math.round(avgNum)];
+  const bestGrade = ['', 'D', 'C', 'B', 'A', 'S'][Math.max(...records.map(r => gradeOrder[r.grade] || 0))];
+  $('recAvgGrade').textContent = avgGrade || '—';
+  $('recBestGrade').textContent = bestGrade || '—';
+  $('recordList').innerHTML = records.map(r => {
+    const d = new Date(r.startedAt);
+    const dateStr = `${d.getFullYear()}.${(d.getMonth()+1).toString().padStart(2,'0')}.${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const modeStr = r.mode === 'cycle' ? '30:2' : '연속';
+    const dur = `${Math.floor(r.durationSec/60)}분`;
+    return `
+      <div class="record-item" data-session="${r.sessionId}">
+        <div class="record-info">
+          <div class="record-grade-badge ${r.grade}">${r.grade}</div>
+          <div class="record-meta">
+            <span class="record-date">${dateStr}</span>
+            <span class="record-mode">${modeStr} · ${dur} · ${r.totalCompressions}회</span>
+          </div>
+        </div>
+        <div style="font-family: JetBrains Mono; font-size: 11px; color: var(--text-dim);">${(r.overallScore*100).toFixed(0)}점</div>
+      </div>`;
+  }).join('');
+  document.querySelectorAll('.record-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const sid = el.dataset.session;
+      const rec = records.find(r => r.sessionId === sid);
+      if (rec) {
+        state.lastResult = rec;
+        renderResult(rec);
+        navigate('result');
+      }
+    });
+  });
+}
+
+$('clearRecordsBtn').addEventListener('click', () => {
+  if (confirm('모든 훈련 기록을 삭제할까요?')) {
+    clearRecords();
+    renderRecords();
+  }
+});
+</script>
+</body>
+</html>
